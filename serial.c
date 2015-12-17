@@ -102,13 +102,13 @@ int serial_is_send_enable(int index)
     return (usart->sr & STM32F4_USART6_SR_TXE);
 }
 
-int serial_send_byte(int index, unsigned char c)
+int serial_send_byte(int index, int c)
 {
     volatile struct stm32f4_usart *usart = regs[index].usart;
 
     while (!serial_is_send_enable(index))
         ;
-    usart->dr = c;
+    usart->dr = c & 0xff;
     //usart->sr &= ~STM32F4_USART6_SR_TC; // clear TC
 
     return 0;
