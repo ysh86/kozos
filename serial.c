@@ -78,14 +78,20 @@ int serial_init(int index)
     usart->gtpr = 0;
 
     usart->cr1  = (STM32F4_USART6_CR1_UE | STM32F4_USART6_CR1_TE | STM32F4_USART6_CR1_RE);
-    /*
-    serial_send_byte(index, ' ');
-    serial_send_byte(index, ' ');
-    serial_send_byte(index, ' ');
-    serial_send_byte(index, ' ');
+
+    // delimiter
+    serial_send_byte(index, '-');
+    serial_send_byte(index, '-');
+    serial_send_byte(index, '-');
+    serial_send_byte(index, '-');
+    serial_send_byte(index, '-');
+    serial_send_byte(index, '-');
+    serial_send_byte(index, '-');
+    serial_send_byte(index, '-');
+    serial_send_byte(index, '-');
+    serial_send_byte(index, '-');
     serial_send_byte(index, '\r');
     serial_send_byte(index, '\n');
-    */
 
     return 0;
 }
