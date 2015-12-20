@@ -18,7 +18,7 @@ OBJS += lib.o serial.o
 
 TARGET = kzload
 
-CFLAGS = -Wall -std=c99 -mcpu=cortex-m4 -mthumb -nostdinc -nostdlib -fno-builtin
+CFLAGS = -Wall -std=c99 -mcpu=cortex-m4 -mthumb -nostdinc -nostdlib -fno-builtin -fleading-underscore
 CFLAGS += -I.
 CFLAGS += -Os
 CFLAGS += -DKZLOAD

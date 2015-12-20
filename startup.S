@@ -4,10 +4,10 @@
 //    .thumb
     .section .text
     .global _start
-//    .type _start,@function
+    .type _start,%function
     .align
 _start:
-    bl main
+    bl _main
 
     // loop
     b .

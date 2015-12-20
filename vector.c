@@ -1,10 +1,11 @@
 #include "defines.h"
 
+extern int stack;
 extern void start(void);
 
 void (*vectors[])(void) = {
-    (void *)(0x20020000), // SP
-    (void *)(0x08000401), //start, // reset
+    (void *)&stack, // SP
+    start + 0x08000000, // reset
                 NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
