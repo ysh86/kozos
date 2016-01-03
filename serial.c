@@ -26,8 +26,9 @@
 
 #define STM32F4_USART_NUM 1
 #define STM32F4_USART6 ((volatile struct stm32f4_usart *)0x40011400)
-#define STM32F4_USART6_SR_TXE (1<<7)
-#define STM32F4_USART6_SR_TC  (1<<6)
+#define STM32F4_USART6_SR_TXE  (1<<7)
+#define STM32F4_USART6_SR_TC   (1<<6)
+#define STM32F4_USART6_SR_RXNE (1<<5)
 #define STM32F4_USART6_CR1_UE (1<<13)
 #define STM32F4_USART6_CR1_TE (1<<3)
 #define STM32F4_USART6_CR1_RE (1<<2)
@@ -112,4 +113,22 @@ int serial_send_byte(int index, int c)
     //usart->sr &= ~STM32F4_USART6_SR_TC; // clear TC
 
     return 0;
+}
+
+int serial_is_recv_enable(int index)
+{
+    volatile struct stm32f4_usart *usart = regs[index].usart;
+    return (usart->sr & STM32F4_USART6_SR_RXNE);
+}
+
+int serial_recv_byte(int index)
+{
+    volatile struct stm32f4_usart *usart = regs[index].usart;
+    int c;
+
+    while (!serial_is_recv_enable(index))
+        ;
+    c = usart->dr & 0xff;
+
+    return c;
 }

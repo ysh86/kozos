@@ -11,7 +11,9 @@ int strcmp(const char *s1, const char *s2);
 int strncmp(const char *s1, const char *s2, size_t len);
 
 int putc(int c);
+int getc(void);
 int puts(const char *str);
+size_t gets(char *buf);
 int putxval(unsigned int value, size_t column);
 
 #endif

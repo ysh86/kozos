@@ -85,12 +85,34 @@ int putc(int c)
     return serial_send_byte(SERIAL_DEFAULT_DEVICE, c);
 }
 
+int getc(void)
+{
+    int c = serial_recv_byte(SERIAL_DEFAULT_DEVICE);
+    c = (c == '\r') ? '\n' : c;
+    putc(c);
+    return c;
+}
+
 int puts(const char *str)
 {
     while (*str) {
         putc(*(str++));
     }
     return 0;
+}
+
+size_t gets(char *buf)
+{
+    size_t i = 0;
+    int c;
+    do {
+        c = getc();
+        if (c == '\n') {
+            c = '\0';
+        }
+        buf[i++] = c;
+    } while (c);
+    return i - 1;
 }
 
 int putxval(unsigned int value, size_t column)
