@@ -14,7 +14,7 @@ RANLIB = $(BINDIR)/$(ADDNAME)ranlib
 STRIP = $(BINDIR)/$(ADDNAME)strip
 
 OBJS = vector.o startup.o main.o
-OBJS += lib.o serial.o xmodem.o
+OBJS += lib.o serial.o xmodem.o elf.o
 
 TARGET = kzload
 
