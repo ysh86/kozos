@@ -6,11 +6,26 @@
 //#define STM32F4_RCC_CR_HSIRDY (1<<1)
 //#define STM32F4_RCC_CFGR      ((volatile uint32_t *)(STM32F4_RCC_BASE + 0x08))
 //#define STM32F4_RCC_APB2RSTR  ((volatile uint32_t *)(STM32F4_RCC_BASE + 0x24))
+//#define STM32F4_RCC_APB2RSTR_USART1RST (1<<4)
 //#define STM32F4_RCC_APB2RSTR_USART6RST (1<<5)
 #define STM32F4_RCC_AHB1ENR  ((volatile uint32_t *)(STM32F4_RCC_BASE + 0x30))
+#define STM32F4_RCC_AHB1ENR_GPIOAEN (1<<0)
 #define STM32F4_RCC_AHB1ENR_GPIOCEN (1<<2)
 #define STM32F4_RCC_APB2ENR  ((volatile uint32_t *)(STM32F4_RCC_BASE + 0x44))
+#define STM32F4_RCC_APB2ENR_USART1EN (1<<4)
 #define STM32F4_RCC_APB2ENR_USART6EN (1<<5)
+
+#define STM32F4_GPIOA_BASE  0x40020000
+#define STM32F4_GPIOA_MODER ((volatile uint32_t *)(STM32F4_GPIOA_BASE + 0x00))
+#define STM32F4_GPIOA_AFRH  ((volatile uint32_t *)(STM32F4_GPIOA_BASE + 0x24))
+#define STM32F4_GPIOA_MODER_9_MASK  ((1<<19)|(1<<18))
+#define STM32F4_GPIOA_MODER_10_MASK ((1<<21)|(1<<20))
+#define STM32F4_GPIOA_MODER_9_AF    ((1<<19)|(0<<18))
+#define STM32F4_GPIOA_MODER_10_AF   ((1<<21)|(0<<20))
+#define STM32F4_GPIOA_AFRH_9_MASK   ((1<<7)|(1<<6)|(1<<5)|(1<<4))
+#define STM32F4_GPIOA_AFRH_10_MASK  ((1<<11)|(1<<10)|(1<<9)|(1<<8))
+#define STM32F4_GPIOA_AFRH_9_AF7    ((0<<7)|(1<<6)|(1<<5)|(1<<4))
+#define STM32F4_GPIOA_AFRH_10_AF7   ((0<<11)|(1<<10)|(1<<9)|(1<<8))
 
 #define STM32F4_GPIOC_BASE  0x40020800
 #define STM32F4_GPIOC_MODER ((volatile uint32_t *)(STM32F4_GPIOC_BASE + 0x00))
@@ -24,14 +39,15 @@
 #define STM32F4_GPIOC_AFRL_6_AF8   ((1<<27)|(0<<26)|(0<<25)|(0<<24))
 #define STM32F4_GPIOC_AFRL_7_AF8   ((1<<31)|(0<<30)|(0<<29)|(0<<28))
 
-#define STM32F4_USART_NUM 1
+#define STM32F4_USART_NUM 2
+#define STM32F4_USART1 ((volatile struct stm32f4_usart *)0x40011000)
 #define STM32F4_USART6 ((volatile struct stm32f4_usart *)0x40011400)
-#define STM32F4_USART6_SR_TXE  (1<<7)
-#define STM32F4_USART6_SR_TC   (1<<6)
-#define STM32F4_USART6_SR_RXNE (1<<5)
-#define STM32F4_USART6_CR1_UE (1<<13)
-#define STM32F4_USART6_CR1_TE (1<<3)
-#define STM32F4_USART6_CR1_RE (1<<2)
+#define STM32F4_USART_SR_TXE  (1<<7)
+#define STM32F4_USART_SR_TC   (1<<6)
+#define STM32F4_USART_SR_RXNE (1<<5)
+#define STM32F4_USART_CR1_UE (1<<13)
+#define STM32F4_USART_CR1_TE (1<<3)
+#define STM32F4_USART_CR1_RE (1<<2)
 
 struct stm32f4_usart {
     volatile uint32_t sr;
@@ -46,6 +62,7 @@ struct stm32f4_usart {
 static struct {
     volatile struct stm32f4_usart *usart;
 } regs[STM32F4_USART_NUM] = {
+    { STM32F4_USART1 },
     { STM32F4_USART6 },
 };
 
@@ -59,28 +76,44 @@ int serial_init(int index)
     //while (!(*STM32F4_RCC_CR & STM32F4_RCC_CR_HSIRDY))
     //    ;
 
+#if SERIAL_DEFAULT_DEVICE==0
+    // clock enabled
+    *STM32F4_RCC_AHB1ENR |= STM32F4_RCC_AHB1ENR_GPIOAEN;
+    *STM32F4_RCC_APB2ENR |= STM32F4_RCC_APB2ENR_USART1EN;
+    // alternate function
+    *STM32F4_GPIOA_MODER &= ~(STM32F4_GPIOA_MODER_10_MASK | STM32F4_GPIOA_MODER_9_MASK);
+    *STM32F4_GPIOA_MODER |=  (STM32F4_GPIOA_MODER_10_AF   | STM32F4_GPIOA_MODER_9_AF);
+    *STM32F4_GPIOA_AFRH  &= ~(STM32F4_GPIOA_AFRH_10_MASK  | STM32F4_GPIOA_AFRH_9_MASK);
+    *STM32F4_GPIOA_AFRH  |=  (STM32F4_GPIOA_AFRH_10_AF7   | STM32F4_GPIOA_AFRH_9_AF7);
+    // reset
+    //*STM32F4_RCC_APB2RSTR |= STM32F4_RCC_APB2RSTR_USART1RST;
+    //*STM32F4_RCC_APB2RSTR &= ~STM32F4_RCC_APB2RSTR_USART1RST;
+#else
     // clock enabled
     *STM32F4_RCC_AHB1ENR |= STM32F4_RCC_AHB1ENR_GPIOCEN;
     *STM32F4_RCC_APB2ENR |= STM32F4_RCC_APB2ENR_USART6EN;
-
+    // alternate function
     *STM32F4_GPIOC_MODER &= ~(STM32F4_GPIOC_MODER_7_MASK | STM32F4_GPIOC_MODER_6_MASK);
     *STM32F4_GPIOC_MODER |=  (STM32F4_GPIOC_MODER_7_AF   | STM32F4_GPIOC_MODER_6_AF);
     *STM32F4_GPIOC_AFRL  &= ~(STM32F4_GPIOC_AFRL_7_MASK  | STM32F4_GPIOC_AFRL_6_MASK);
     *STM32F4_GPIOC_AFRL  |=  (STM32F4_GPIOC_AFRL_7_AF8   | STM32F4_GPIOC_AFRL_6_AF8);
-
     // reset
     //*STM32F4_RCC_APB2RSTR |= STM32F4_RCC_APB2RSTR_USART6RST;
     //*STM32F4_RCC_APB2RSTR &= ~STM32F4_RCC_APB2RSTR_USART6RST;
+#endif
 
     //usart->brr  = 0x222e; // mbed default: 0x222e 84MHz / 16 / 546.875 = 9600
-    usart->brr = 0x0683; // 16MHz / 16 / 104.1875 = 9598
+    //usart->brr = 0x0683; // 16MHz / 16 / 104.1875 = 9598
+    usart->brr = 0x008b; // 16MHz / 16 / 8.6875 = 115108
     usart->cr2  = 0;
     usart->cr3  = 0;
     usart->gtpr = 0;
 
-    usart->cr1  = (STM32F4_USART6_CR1_UE | STM32F4_USART6_CR1_TE | STM32F4_USART6_CR1_RE);
+    usart->cr1  = (STM32F4_USART_CR1_UE | STM32F4_USART_CR1_TE | STM32F4_USART_CR1_RE);
 
     // delimiter
+    serial_send_byte(index, '\r');
+    serial_send_byte(index, '\n');
     serial_send_byte(index, '-');
     serial_send_byte(index, '-');
     serial_send_byte(index, '-');
@@ -100,7 +133,7 @@ int serial_init(int index)
 int serial_is_send_enable(int index)
 {
     volatile struct stm32f4_usart *usart = regs[index].usart;
-    return (usart->sr & STM32F4_USART6_SR_TXE);
+    return (usart->sr & STM32F4_USART_SR_TXE);
 }
 
 int serial_send_byte(int index, int c)
@@ -110,7 +143,7 @@ int serial_send_byte(int index, int c)
     while (!serial_is_send_enable(index))
         ;
     usart->dr = c & 0xff;
-    //usart->sr &= ~STM32F4_USART6_SR_TC; // clear TC
+    //usart->sr &= ~STM32F4_USART_SR_TC; // clear TC
 
     return 0;
 }
@@ -118,7 +151,7 @@ int serial_send_byte(int index, int c)
 int serial_is_recv_enable(int index)
 {
     volatile struct stm32f4_usart *usart = regs[index].usart;
-    return (usart->sr & STM32F4_USART6_SR_RXNE);
+    return (usart->sr & STM32F4_USART_SR_RXNE);
 }
 
 int serial_recv_byte(int index)
