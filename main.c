@@ -50,6 +50,8 @@ int main(void)
     static char buf[16];
     static size_t size = 0;
     static char *loadbuf = NULL;
+    char *entry_point;
+    void (*f)(void);
     extern int buffer_start;
 
     init();
@@ -75,7 +77,17 @@ int main(void)
             puts("\n");
             dump(loadbuf, size);
         } else if (!strcmp(buf, "run")) {
-            elf_load(loadbuf);
+            entry_point = elf_load(loadbuf);
+            if (!entry_point) {
+                puts("run error!\n");
+            } else {
+                puts("starting from entry point: ");
+                putxval((uintptr_t)entry_point, 0);
+                puts("\n");
+                f = (void (*)(void))entry_point;
+                f();
+                /* never return to here */
+            }
         } else {
             puts("unknown.\n");
         }
