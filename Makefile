@@ -13,15 +13,15 @@ OBJDUMP = $(BINDIR)/$(ADDNAME)objdump
 RANLIB = $(BINDIR)/$(ADDNAME)ranlib
 STRIP = $(BINDIR)/$(ADDNAME)strip
 
-OBJS = vector.o startup.o main.o
-OBJS += lib.o serial.o xmodem.o elf.o
+OBJS = startup.o main.o
+OBJS += lib.o serial.o
 
-TARGET = kzload
+TARGET = kozos
 
 CFLAGS = -Wall -std=c99 -mcpu=cortex-m4 -mthumb -nostdinc -nostdlib -fno-builtin -fleading-underscore
 CFLAGS += -I.
 CFLAGS += -Os
-CFLAGS += -DKZLOAD
+CFLAGS += -DKOZOS
 
 LFLAGS = -static -T ld.scr -L.
 
@@ -29,11 +29,7 @@ LFLAGS = -static -T ld.scr -L.
 .SUFFIXES: .c .o
 .SUFFIXES: .S .o
 
-all :		$(TARGET).hex
-
-.elf.hex :	$<
-			$(OBJCOPY) -O binary $< $@
-#			$(OBJCOPY) -O ihex $< $@
+all :		$(TARGET).elf
 
 $(TARGET).elf :	$(OBJS)
 	        $(CC) $(OBJS) -o $@ $(CFLAGS) $(LFLAGS)
@@ -45,4 +41,4 @@ $(TARGET).elf :	$(OBJS)
 	        $(CC) -c $(CFLAGS) $<
 
 clean :
-	        rm -f $(OBJS) $(TARGET).elf $(TARGET).hex
+	        rm -f $(OBJS) $(TARGET).elf
