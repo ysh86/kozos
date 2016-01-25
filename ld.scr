@@ -9,6 +9,7 @@ MEMORY
         rom(rx)         : o = 0x00000400, l = 0x0007fc00
 
         ramall(rwx)     : o = 0x20000000, l = 0x00020000 /* 128KB */
+        softvec(rw)     : o = 0x20000000, l = 0x00000040 /* top of RAM */
         buffer(rwx)     : o = 0x20010000, l = 0x0000c000 /* 48KB */
         data(rwx)       : o = 0x2001c000, l = 0x00004000 /* 16KB */
         stack(rw)       : o = 0x20020000, l = 0x00000000 /* end of RAM */
@@ -36,6 +37,10 @@ SECTIONS
             _erodata = . ;
         } > rom
         . = ALIGN (4);
+
+        .softvec : {
+            _softvec = . ;
+        } > softvec
 
         .buffer : {
             _buffer_start = . ;

@@ -39,6 +39,12 @@
 #define STM32F4_GPIOC_AFRL_6_AF8   ((1<<27)|(0<<26)|(0<<25)|(0<<24))
 #define STM32F4_GPIOC_AFRL_7_AF8   ((1<<31)|(0<<30)|(0<<29)|(0<<28))
 
+#define STM32F4_NVIC_BASE 0xE000E100
+#define STM32F4_NVIC_ISER1 ((volatile uint32_t *)(STM32F4_NVIC_BASE + 0x004))
+#define STM32F4_NVIC_ISER1_EN_POS37 ((1<<(37-32)))
+#define STM32F4_NVIC_ISER2 ((volatile uint32_t *)(STM32F4_NVIC_BASE + 0x008))
+#define STM32F4_NVIC_ISER2_EN_POS71 ((1<<(71-64)))
+
 #define STM32F4_USART_NUM 2
 #define STM32F4_USART1 ((volatile struct stm32f4_usart *)0x40011000)
 #define STM32F4_USART6 ((volatile struct stm32f4_usart *)0x40011400)
@@ -88,6 +94,8 @@ int serial_init(int index)
     // reset
     //*STM32F4_RCC_APB2RSTR |= STM32F4_RCC_APB2RSTR_USART1RST;
     //*STM32F4_RCC_APB2RSTR &= ~STM32F4_RCC_APB2RSTR_USART1RST;
+    // interrupt
+    *STM32F4_NVIC_ISER1 |= STM32F4_NVIC_ISER1_EN_POS37;
 #else
     // clock enabled
     *STM32F4_RCC_AHB1ENR |= STM32F4_RCC_AHB1ENR_GPIOCEN;
@@ -100,6 +108,8 @@ int serial_init(int index)
     // reset
     //*STM32F4_RCC_APB2RSTR |= STM32F4_RCC_APB2RSTR_USART6RST;
     //*STM32F4_RCC_APB2RSTR &= ~STM32F4_RCC_APB2RSTR_USART6RST;
+    // interrupt
+    *STM32F4_NVIC_ISER2 |= STM32F4_NVIC_ISER2_EN_POS71;
 #endif
 
     //usart->brr  = 0x222e; // mbed default: 0x222e 84MHz / 16 / 546.875 = 9600

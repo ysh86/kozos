@@ -1,4 +1,5 @@
 #include "defines.h"
+#include "interrupt.h"
 #include "serial.h"
 #include "xmodem.h"
 #include "elf.h"
@@ -10,6 +11,8 @@ static int init(void)
 
     memcpy(&data_start, &erodata, (size_t)&edata - (size_t)&data_start);
     memset(&bss_start, 0, (size_t)&ebss - (size_t)&bss_start);
+
+    softvec_init();
 
     serial_init(SERIAL_DEFAULT_DEVICE);
 
@@ -53,6 +56,8 @@ int main(void)
     char *entry_point;
     void (*f)(void);
     extern int buffer_start;
+
+    INTR_DISABLE;
 
     init();
 
