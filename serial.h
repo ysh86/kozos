@@ -9,4 +9,11 @@ int serial_send_byte(int index, int c);
 int serial_is_recv_enable(int index);
 int serial_recv_byte(int index);
 
+int serial_intr_is_send_enable(int index);
+void serial_intr_send_enable(int index);
+void serial_intr_send_disable(int index);
+int serial_intr_is_recv_enable(int index);
+void serial_intr_recv_enable(int index);
+void serial_intr_recv_disable(int index);
+
 #endif
