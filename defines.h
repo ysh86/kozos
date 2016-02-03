@@ -11,4 +11,8 @@ typedef unsigned long uint32_t;
 typedef unsigned int size_t;
 typedef unsigned int uintptr_t;
 
+typedef uint32_t kz_thread_id_t;
+typedef int (*kz_func_t)(int argc, char *argv[]);
+typedef void (*kz_handler_t)(void);
+
 #endif

@@ -7,7 +7,9 @@ MEMORY
         ramall(rwx)     : o = 0x20000000, l = 0x00020000 /* 128KB */
         softvec(rw)     : o = 0x20000000, l = 0x00000040 /* top of RAM */
         ram(rwx)        : o = 0x20000100, l = 0x0001ff00
-        stack(rw)       : o = 0x20020000, l = 0x00000000 /* end of RAM */
+        userstack(rw)   : o = 0x2001f000, l = 0x00000000
+        bootstack(rw)   : o = 0x20020000, l = 0x00000000
+        intrstack(rw)   : o = 0x20020000, l = 0x00000000 /* end of RAM */
 }
 
 SECTIONS
@@ -48,7 +50,15 @@ SECTIONS
         . = ALIGN (4);
         _end = . ;
 
-        .stack : {
-            _stack = . ;
-        } > stack
+        .userstack : {
+            _userstack = . ;
+        } > userstack
+
+        .bootstack : {
+            _bootstack = . ;
+        } > bootstack
+
+        .intrstack : {
+            _intrstack = . ;
+        } > intrstack
 }
