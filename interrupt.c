@@ -17,10 +17,10 @@ int softvec_setintr(softvec_type_t type, softvec_handler_t handler)
     return 0;
 }
 
-void interrupt(softvec_type_t type)
+void interrupt(softvec_type_t type, uintptr_t sp)
 {
     softvec_handler_t handler = SOFTVECS[type];
     if (handler) {
-        handler(type);
+        handler(type, sp);
     }
 }

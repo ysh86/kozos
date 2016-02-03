@@ -2,14 +2,14 @@
 
 #define FLASH_BASE 0x08000000
 
-extern int stack;
+extern int bootstack;
 extern void start(void);
 extern void intr_softerr(void);
 extern void intr_syscall(void);
 extern void intr_serintr(void);
 
 void (*vectors[])(void) = {
-    (void *)&stack, // SP
+    (void *)&bootstack, // SP
 
     start + FLASH_BASE, // reset
 

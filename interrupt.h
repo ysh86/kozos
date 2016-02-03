@@ -6,7 +6,7 @@ extern char softvec;
 
 typedef int softvec_type_t;
 
-typedef void (*softvec_handler_t)(softvec_type_t type);
+typedef void (*softvec_handler_t)(softvec_type_t type, uintptr_t sp);
 
 #define SOFTVECS ((softvec_handler_t *)SOFTVEC_ADDR)
 
@@ -17,6 +17,6 @@ int softvec_init(void);
 
 int softvec_setintr(softvec_type_t type, softvec_handler_t handler);
 
-void interrupt(softvec_type_t type);
+void interrupt(softvec_type_t type, uintptr_t sp);
 
 #endif

@@ -12,7 +12,8 @@ MEMORY
         softvec(rw)     : o = 0x20000000, l = 0x00000040 /* top of RAM */
         buffer(rwx)     : o = 0x20010000, l = 0x0000c000 /* 48KB */
         data(rwx)       : o = 0x2001c000, l = 0x00004000 /* 16KB */
-        stack(rw)       : o = 0x20020000, l = 0x00000000 /* end of RAM */
+        bootstack(rw)   : o = 0x20020000, l = 0x00000000
+        intrstack(rw)   : o = 0x20020000, l = 0x00000000 /* end of RAM */
 }
 
 SECTIONS
@@ -62,7 +63,11 @@ SECTIONS
         . = ALIGN (4);
         _end = . ;
 
-        .stack : {
-            _stack = . ;
-        } > stack
+        .bootstack : {
+            _bootstack = . ;
+        } > bootstack
+
+        .intrstack : {
+            _intrstack = . ;
+        } > intrstack
 }
