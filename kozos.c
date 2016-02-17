@@ -336,11 +336,12 @@ static kz_thread_id_t thread_recv(kz_msgbox_id_t id, size_t *sizep, char **pp)
 }
 
 static void thread_intr(softvec_type_t type, uintptr_t sp);
-static int setintr(softvec_type_t type, kz_handler_t handler)
+static int thread_setintr(softvec_type_t type, kz_handler_t handler)
 {
     softvec_setintr(type, thread_intr);
 
     handlers[type] = handler;
+    putcurrent();
 
     return 0;
 }
@@ -388,6 +389,9 @@ static void call_function(kz_syscall_type_t type, kz_syscall_param_t *p)
     case KZ_SYSCALL_TYPE_RECV:
         p->un.recv.ret = thread_recv(p->un.recv.id, p->un.recv.sizep, p->un.recv.pp);
         break;
+    case KZ_SYSCALL_TYPE_SETINTR:
+        p->un.setintr.ret = thread_setintr(p->un.setintr.type, p->un.setintr.handler);
+        break;
     default:
         break;
     }
@@ -396,6 +400,12 @@ static void call_function(kz_syscall_type_t type, kz_syscall_param_t *p)
 static void syscall_proc(kz_syscall_type_t type, kz_syscall_param_t *p)
 {
     getcurrent();
+    call_function(type, p);
+}
+
+static void srvcall_proc(kz_syscall_type_t type, kz_syscall_param_t *p)
+{
+    current = NULL;
     call_function(type, p);
 }
 
@@ -454,8 +464,8 @@ void kz_start(kz_func_t func, char *name, int priority, size_t stacksize,
     memset(handlers, 0, sizeof(handlers));
     memset(msgboxes, 0, sizeof(msgboxes));
 
-    setintr(SOFTVEC_TYPE_SYSCALL, syscall_intr);
-    setintr(SOFTVEC_TYPE_SOFTERR, softerr_intr);
+    thread_setintr(SOFTVEC_TYPE_SYSCALL, syscall_intr);
+    thread_setintr(SOFTVEC_TYPE_SOFTERR, softerr_intr);
 
     current = (kz_thread *)thread_run(func, name, priority, stacksize, argc, argv);
 
@@ -474,4 +484,9 @@ void kz_syscall(kz_syscall_type_t type, kz_syscall_param_t *param)
     current->syscall.type = type;
     current->syscall.param = param;
     __asm__ __volatile__ ("svc #0");
+}
+
+void kz_srvcall(kz_syscall_type_t type, kz_syscall_param_t *param)
+{
+    srvcall_proc(type, param);
 }
